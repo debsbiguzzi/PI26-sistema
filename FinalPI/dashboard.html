@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Econômico Brasileiro</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+<style>
+  :root {
+    --bg:          #060d1a;
+    --bg-2:        #0a1628;
+    --panel:       #0d1f38;
+    --panel-2:     #102240;
+    --panel-3:     #122648;
+    --border:      #1a3356;
+    --border-2:    #204070;
+    --text:        #d4e4f7;
+    --text-2:      #8aadcc;
+    --text-3:      #4a7a9b;
+    --accent:      #1e90ff;
+    --accent-2:    #3aa8ff;
+    --accent-glow: rgba(30, 144, 255, 0.15);
+    --green:       #00c07f;
+    --red:         #ff4f64;
+    --yellow:      #f5c842;
+    --purple:      #9d7fff;
+    --teal:        #00d4c8;
+    --font-sans:   'IBM Plex Sans', sans-serif;
+    --font-mono:   'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(30, 80, 180, 0.12) 0%, transparent 70%),
+      linear-gradient(180deg, rgba(10, 22, 40, 0) 0%, rgba(6, 13, 26, 1) 100%);
+  }
+
+  /* ── Header ── */
+  header {
+    background: rgba(10, 22, 40, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2.5rem;
+    height: 56px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .logo-mark {
+    width: 28px;
+    height: 28px;
+    background: var(--accent);
+    clip-path: polygon(0 25%, 50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%);
+    opacity: 0.9;
+  }
+
+  header h1 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .header-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+  }
+
+  .header-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-3);
+    font-weight: 400;
+    letter-spacing: 0.03em;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 0.3rem 0.75rem;
+    border-radius: 2px;
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    color: var(--text-2);
+    letter-spacing: 0.03em;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-3);
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .status-dot.online {
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse-green 2s infinite;
+  }
+  .status-dot.error { background: var(--red); }
+
+  @keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 4px var(--green); }
+    50%       { box-shadow: 0 0 10px var(--green); }
+  }
+
+  #statusText {
+    color: var(--text-2);
+  }
+
+  /* ── Container ── */
+  .container {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 2rem 2.5rem 4rem;
+  }
+
+  /* ── Section Label ── */
+  .section-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .btn {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    padding: 0.5rem 1rem;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: var(--font-sans);
+    letter-spacing: 0.03em;
+    transition: all 0.15s;
+  }
+  .btn:hover:not(:disabled) {
+    background: var(--panel-2);
+    border-color: var(--accent);
+    color: var(--text);
+  }
+  .btn:disabled { opacity: 0.45; cursor: wait; }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--accent-2);
+    border-color: var(--accent-2);
+    box-shadow: 0 0 20px rgba(30, 144, 255, 0.3);
+  }
+
+  .btn-secondary {
+    border-color: var(--purple);
+    color: var(--purple);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: rgba(157, 127, 255, 0.08);
+    box-shadow: 0 0 16px rgba(157, 127, 255, 0.15);
+  }
+
+  .toolbar-sep {
+    width: 1px;
+    height: 28px;
+    background: var(--border);
+    margin: 0 0.25rem;
+  }
+
+  select {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.5rem 0.85rem;
+    border-radius: 2px;
+    font-size: 0.8rem;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  select:hover { border-color: var(--border-2); }
+  select:focus { outline: none; border-color: var(--accent); }
+
+  .ctrl-label {
+    font-size: 0.72rem;
+    color: var(--text-3);
+    letter-spacing: 0.04em;
+    margin-right: 0.3rem;
+  }
+
+  /* ── KPI Cards ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+  }
+
+  .kpi-card {
+    background: var(--panel);
+    padding: 1.25rem 1.5rem;
+    transition: background 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .kpi-card:hover { background: var(--panel-2); }
+  .kpi-card:hover::before { opacity: 1; }
+
+  .kpi-name {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 0.75rem;
+    font-family: var(--font-mono);
+  }
+
+  .kpi-value {
+    font-size: 2rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 0.6rem;
+  }
+
+  .kpi-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .kpi-delta {
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    padding: 0.15rem 0.4rem;
+    border-radius: 2px;
+  }
+  .kpi-delta.up   { color: var(--red);   background: rgba(255, 79, 100, 0.1); }
+  .kpi-delta.down { color: var(--green); background: rgba(0, 192, 127, 0.1); }
+  .kpi-delta.stable { color: var(--text-3); background: rgba(74, 122, 155, 0.1); }
+
+  .kpi-date {
+    font-size: 0.7rem;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+  }
+
+  /* ── Main Chart ── */
+  .main-chart-wrapper {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    margin-bottom: 2.5rem;
+    overflow: hidden;
+  }
+
+  .main-chart-header {
+    padding: 1.25rem 1.75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .chart-title-block {}
+
+  .chart-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-bottom: 0.2rem;
+  }
+
+  .chart-desc {
+    font-size: 0.75rem;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+  }
+
+  .chart-legend-custom {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    color: var(--text-2);
+    font-weight: 500;
+  }
+
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  .main-chart-body {
+    padding: 1.5rem 1.75rem 1.75rem;
+    height: 440px;
+    position: relative;
+  }
+
+  /* ── AI Projection Section ── */
+  .ai-section {
+    margin-bottom: 2.5rem;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--panel);
+  }
+
+  .ai-section-header {
+    padding: 1.25rem 1.75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(90deg, rgba(157, 127, 255, 0.05) 0%, transparent 60%);
+  }
+
+  .ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--purple);
+    background: rgba(157, 127, 255, 0.1);
+    border: 1px solid rgba(157, 127, 255, 0.25);
+    padding: 0.25rem 0.6rem;
+    border-radius: 2px;
+  }
+
+  .ai-badge-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--purple);
+    animation: pulse-purple 2.5s infinite;
+  }
+
+  @keyframes pulse-purple {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  .ai-section-body {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 0;
+  }
+
+  .ai-projections-panel {
+    padding: 1.5rem 1.75rem;
+    border-right: 1px solid var(--border);
+  }
+
+  .proj-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+  }
+
+  .proj-table th {
+    padding: 0.4rem 0.75rem 0.75rem;
+    text-align: right;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    border-bottom: 1px solid var(--border);
+  }
+  .proj-table th:first-child { text-align: left; }
+
+  .proj-table td {
+    padding: 0.55rem 0.75rem;
+    text-align: right;
+    border-bottom: 1px solid rgba(26, 51, 86, 0.4);
+  }
+  .proj-table td:first-child {
+    text-align: left;
+    color: var(--yellow);
+    font-weight: 600;
+  }
+  .proj-table tr:last-child td { border-bottom: none; }
+  .proj-table tr:hover td { background: rgba(30, 144, 255, 0.04); }
+
+  .ai-analysis-panel {
+    padding: 1.5rem 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .analysis-block {
+    background: rgba(157, 127, 255, 0.05);
+    border-left: 2px solid var(--purple);
+    padding: 1rem 1.25rem;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .analysis-block-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 0.6rem;
+    font-family: var(--font-mono);
+  }
+
+  .analysis-text {
+    font-size: 0.84rem;
+    color: var(--text-2);
+    line-height: 1.65;
+  }
+
+  .risks-block {}
+
+  .risks-block-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-bottom: 0.75rem;
+    font-family: var(--font-mono);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .risk-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    background: rgba(245, 200, 66, 0.05);
+    border-left: 2px solid rgba(245, 200, 66, 0.3);
+    margin-bottom: 0.5rem;
+    border-radius: 0 2px 2px 0;
+    font-size: 0.82rem;
+    color: var(--text-2);
+    line-height: 1.4;
+  }
+
+  .risk-num {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--yellow);
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .ai-footer {
+    padding: 0.75rem 1.75rem;
+    border-top: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .ai-disclaimer {
+    font-size: 0.7rem;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+  }
+
+  #projectionDate {
+    font-size: 0.7rem;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+  }
+
+  /* ── Two Column Sections ── */
+  .row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  @media (max-width: 1000px) { .row-2 { grid-template-columns: 1fr; } }
+
+  /* ── Panel ── */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .panel-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .panel-subtitle {
+    font-size: 0.72rem;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+  }
+
+  .panel-body {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .chart-container {
+    height: 300px;
+    position: relative;
+  }
+
+  /* ── Data Table ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+
+  .data-table thead th {
+    padding: 0.5rem 0.75rem 0.65rem;
+    text-align: left;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+  }
+
+  .data-table tbody td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid rgba(26, 51, 86, 0.35);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+  }
+
+  .data-table tbody tr:last-child td { border-bottom: none; }
+  .data-table tbody tr:hover td { background: rgba(30, 144, 255, 0.04); }
+  .data-table .td-right { text-align: right; }
+
+  /* ── Bolsa Família ── */
+  .bf-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 2px;
+  }
+
+  .bf-kpi {
+    background: var(--panel-2);
+    padding: 1rem 1.25rem;
+  }
+
+  .bf-kpi-label {
+    font-size: 0.67rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 0.4rem;
+    font-family: var(--font-mono);
+  }
+
+  .bf-kpi-value {
+    font-size: 1.35rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    color: var(--teal);
+    letter-spacing: -0.01em;
+  }
+
+  .bf-kpi-note {
+    font-size: 0.68rem;
+    color: var(--text-3);
+    margin-top: 0.2rem;
+    font-family: var(--font-mono);
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem;
+  }
+
+  .tab {
+    background: none;
+    border: none;
+    color: var(--text-3);
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 500;
+    font-family: var(--font-sans);
+    letter-spacing: 0.03em;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: var(--text-2); }
+  .tab.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── Profile Bars ── */
+  .profile-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid rgba(26, 51, 86, 0.4);
+  }
+  .profile-row:last-child { border-bottom: none; }
+
+  .profile-label {
+    font-size: 0.78rem;
+    color: var(--text-2);
+    flex: 1;
+    min-width: 160px;
+  }
+
+  .profile-bar-track {
+    flex: 2;
+    height: 4px;
+    background: var(--panel-3);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .profile-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .profile-pct {
+    font-size: 0.78rem;
+    font-family: var(--font-mono);
+    color: var(--accent-2);
+    font-weight: 600;
+    width: 36px;
+    text-align: right;
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 0.85rem 1.25rem;
+    border-radius: 3px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+    max-width: 360px;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.22s, transform 0.22s;
+    pointer-events: none;
+    z-index: 200;
+    font-size: 0.83rem;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.error   { border-left-color: var(--red); }
+  .toast.success { border-left-color: var(--green); }
+
+  /* ── Loading ── */
+  .loading {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty {
+    text-align: center;
+    color: var(--text-3);
+    padding: 2.5rem 1rem;
+    font-size: 0.82rem;
+    font-family: var(--font-mono);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 768px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .ai-section-body { grid-template-columns: 1fr; }
+    .bf-kpis { grid-template-columns: 1fr 1fr; }
+    .container { padding: 1.25rem; }
+    header { padding: 0 1.25rem; }
+    .header-subtitle { display: none; }
+    .main-chart-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-mark"></div>
+    <h1>Dashboard Econômico</h1>
+    <div class="header-divider"></div>
+    <span class="header-subtitle">Banco Central do Brasil · Projeção Claude AI</span>
+  </div>
+  <div class="header-right">
+    <span id="clockDisplay" style="font-size:0.72rem;color:var(--text-3);font-family:var(--font-mono);"></span>
+    <div class="status-pill">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Verificando…</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="btn btn-primary" id="btnSync">Sincronizar BCB</button>
+    <button class="btn btn-secondary" id="btnGenerate">Gerar Projeção IA</button>
+    <button class="btn" id="btnReload">Atualizar</button>
+    <div class="toolbar-sep"></div>
+    <span class="ctrl-label">Período</span>
+    <select id="selMonths">
+      <option value="6">6 meses</option>
+      <option value="12" selected>12 meses</option>
+      <option value="24">24 meses</option>
+      <option value="36">36 meses</option>
+    </select>
+    <span class="ctrl-label">Índice</span>
+    <select id="selIndex">
+      <option value="">Todos</option>
+      <option value="IPCA">IPCA</option>
+      <option value="INPC">INPC</option>
+      <option value="IGP-M">IGP-M</option>
+      <option value="PIB">PIB</option>
+      <option value="INCC">INCC</option>
+    </select>
+  </div>
+
+  <!-- KPI STRIP -->
+  <div class="section-label">Indicadores Recentes</div>
+  <div class="kpi-grid" id="kpiGrid">
+    <div class="empty" style="grid-column:1/-1">Carregando indicadores…</div>
+  </div>
+
+  <!-- MAIN CHART — CENTRAL -->
+  <div class="section-label">Série Histórica & Projeções</div>
+  <div class="main-chart-wrapper">
+    <div class="main-chart-header">
+      <div class="chart-title-block">
+        <div class="chart-title">Variação Mensal dos Índices Econômicos</div>
+        <div class="chart-desc">Fonte: SGS/BCB · Linha contínua: dados reais · Linha tracejada: projeção IA</div>
+      </div>
+      <div class="chart-legend-custom" id="chartLegend">
+        <!-- preenchido por JS -->
+      </div>
+    </div>
+    <div class="main-chart-body">
+      <canvas id="chartIndices"></canvas>
+    </div>
+  </div>
+
+  <!-- AI SECTION -->
+  <div class="section-label">Análise & Projeção por Inteligência Artificial</div>
+  <div class="ai-section">
+    <div class="ai-section-header">
+      <div>
+        <div style="font-size:0.9rem;font-weight:600;color:var(--text);margin-bottom:0.2rem;">Projeção para os Próximos 6 Meses</div>
+        <div style="font-size:0.72rem;color:var(--text-3);font-family:var(--font-mono);">Modelo Claude · Baseado em série histórica BCB</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <span id="projectionDate" style="font-size:0.72rem;color:var(--text-3);font-family:var(--font-mono);">—</span>
+        <span class="ai-badge"><span class="ai-badge-dot"></span>IA Generativa</span>
+      </div>
+    </div>
+
+    <div class="ai-section-body" id="aiSectionBody">
+      <div class="ai-projections-panel">
+        <table class="proj-table">
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th style="color:#58a6ff">IPCA</th>
+              <th style="color:#3fb950">INPC</th>
+              <th style="color:#f85149">IGP-M</th>
+              <th style="color:#bc8cff">PIB</th>
+              <th style="color:#d29922">INCC</th>
+            </tr>
+          </thead>
+          <tbody id="projTableBody">
+            <tr><td colspan="6" class="empty">Nenhuma projeção disponível.<br>Clique em "Gerar Projeção IA" para iniciar.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ai-analysis-panel" id="aiAnalysisPanel">
+        <div class="empty">Nenhuma análise disponível.</div>
+      </div>
+    </div>
+
+    <div class="ai-footer">
+      <span class="ai-disclaimer">* Projeções geradas por IA com base em dados históricos. Não constituem recomendação financeira ou de investimento.</span>
+    </div>
+  </div>
+
+  <!-- DATA TABLE + BOLSA FAMÍLIA KPIs -->
+  <div class="row-2">
+
+    <!-- TABELA DETALHADA -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Dados Históricos Detalhados</div>
+        <div class="panel-subtitle" id="dataCount">—</div>
+      </div>
+      <div style="overflow-y:auto;max-height:360px;">
+        <table class="data-table" id="tableIndices">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Índice</th>
+              <th class="td-right">Valor (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="3" class="empty">Carregando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BOLSA FAMÍLIA KPIs -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Bolsa Família — Campinas</div>
+        <div class="panel-subtitle" id="bfMonth">—</div>
+      </div>
+      <div style="background:var(--border);height:1px;"></div>
+      <div class="bf-kpis" id="bfKpis">
+        <div class="empty" style="grid-column:1/-1">Carregando…</div>
+      </div>
+      <div class="panel-body" id="bfProfileSection">
+        <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:1rem;font-family:var(--font-mono);">Perfil dos Beneficiários</div>
+        <div id="profileBars"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOLSA FAMÍLIA CHARTS -->
+  <div class="section-label">Bolsa Família — Análise Regional e Histórica</div>
+  <div class="row-2">
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Distribuição Regional de Beneficiários</div>
+        <div class="panel-subtitle">Campinas, SP · 2024</div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-container"><canvas id="chartRegions"></canvas></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Evolução — Famílias em Situação de Pobreza Extrema</div>
+        <div class="panel-subtitle">2020–2025 · 2025 estimativa</div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-container"><canvas id="chartHistory"></canvas></div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   FETCH DIRETO NO BCB — sem backend necessário
+   ═══════════════════════════════════════════════════════════ */
+
+const SERIES = {
+  "IPCA":  433,
+  "INPC":  188,
+  "IGP-M": 189,
+  "PIB":   7326,   /* var. real acumulada em 12 meses (%) — única série BCB que retorna % */
+  "INCC":  192,
+};
+
+const COLORS = {
+  "IPCA":  "#1e90ff",
+  "INPC":  "#3fb950",
+  "IGP-M": "#f85149",
+  "PIB":   "#bc8cff",
+  "INCC":  "#d29922",
+};
+
+/* Cache da sessão: { IPCA:[{date:"YYYY-MM-DD", value:0.42},...], ... } */
+let _cache = {};
+
+let chartIndices = null;
+let chartRegions = null;
+let chartHistory = null;
+
+/* ── Helpers ─────────────────────────────────────────────── */
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 4500);
+}
+
+function bcbToISO(s) {
+  const [d, m, y] = s.split('/');
+  return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+function fmtMonth(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+}
+function fmtNum(v, dec = 2) {
+  if (v == null || isNaN(v)) return '—';
+  return Number(v).toFixed(dec).replace('.', ',');
+}
+
+/* Clock */
+function updateClock() {
+  document.getElementById('clockDisplay').textContent =
+    new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+/* ── Fetch BCB ───────────────────────────────────────────── */
+async function fetchAllBCB(n) {
+  const out = {};
+  await Promise.allSettled(
+    Object.entries(SERIES).map(async ([nome, cod]) => {
+      try {
+        const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${cod}/dados/ultimos/${n}?formato=json`;
+        const r = await fetch(url, { mode: 'cors' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const raw = await r.json();
+        out[nome] = raw
+          .map(d => ({ date: bcbToISO(d.data), value: parseFloat(String(d.valor).replace(',','.')) }))
+          .sort((a, b) => new Date(a.date) - new Date(b.date));
+      } catch (e) {
+        console.warn('BCB [' + nome + ']:', e.message);
+        out[nome] = [];
+      }
+    })
+  );
+  _cache = out;
+  return out;
+}
+
+/* ── Health (pinga o BCB) ────────────────────────────────── */
+async function checkHealth() {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  try {
+    const r = await fetch(
+      'https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados/ultimos/1?formato=json',
+      { mode: 'cors' }
+    );
+    if (!r.ok) throw new Error();
+    const total = Object.values(_cache).reduce((s, v) => s + v.length, 0);
+    dot.className = 'status-dot online';
+    txt.textContent = 'BCB Online' + (total ? ' · ' + total + ' registros' : '');
+  } catch {
+    dot.className = 'status-dot error';
+    txt.textContent = 'BCB inacessível';
+  }
+}
+
+/* ── KPIs ────────────────────────────────────────────────── */
+async function loadKPIs() {
+  const grid = document.getElementById('kpiGrid');
+  try {
+    const months = parseInt(document.getElementById('selMonths').value);
+    await fetchAllBCB(months);
+
+    grid.innerHTML = '';
+    for (const [nome, series] of Object.entries(_cache)) {
+      if (!series.length) {
+        grid.innerHTML += `
+          <div class="kpi-card">
+            <div class="kpi-name">${nome}</div>
+            <div class="kpi-value" style="color:var(--text-3);font-size:1.4rem">—</div>
+            <div class="kpi-meta"><span class="kpi-date">sem dados</span></div>
+          </div>`;
+        continue;
+      }
+      const atual    = series[series.length - 1];
+      const anterior = series.length >= 2 ? series[series.length - 2] : null;
+      const delta    = anterior ? atual.value - anterior.value : null;
+      const trend    = delta == null ? 'stable' : delta > 0 ? 'up' : 'down';
+      const arrow    = trend === 'up' ? '+' : trend === 'down' ? '−' : '±';
+      const deltaStr = delta != null ? `${arrow}${fmtNum(Math.abs(delta))} pp` : '';
+
+      grid.innerHTML += `
+        <div class="kpi-card">
+          <div class="kpi-name">${nome}</div>
+          <div class="kpi-value" style="color:${COLORS[nome] || 'var(--text)'}">
+            ${fmtNum(atual.value)}<span style="font-size:0.9rem;opacity:0.7">%</span>
+          </div>
+          <div class="kpi-meta">
+            ${deltaStr ? `<span class="kpi-delta ${trend}">${deltaStr}</span>` : ''}
+            <span class="kpi-date">${fmtDate(atual.date)}</span>
+          </div>
+        </div>`;
+    }
+
+    /* Legend */
+    const legend = document.getElementById('chartLegend');
+    legend.innerHTML = Object.entries(COLORS).map(([n, c]) => `
+      <div class="legend-item">
+        <span class="legend-dot" style="background:${c}"></span>${n}
+      </div>`).join('');
+
+    await checkHealth();
+
+  } catch (e) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;color:var(--red)">Erro: ${e.message}</div>`;
+  }
+}
+
+/* ── Chart principal ─────────────────────────────────────── */
+async function loadChart() {
+  const idx = document.getElementById('selIndex').value;
+  try {
+    if (!Object.keys(_cache).length) {
+      await fetchAllBCB(parseInt(document.getElementById('selMonths').value));
+    }
+
+    /* Calcula a data de corte com base nos meses selecionados */
+    const months = parseInt(document.getElementById('selMonths').value);
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - months);
+    const cutoffISO = cutoff.toISOString().split('T')[0];
+
+    const byIndex = {};
+    Object.entries(_cache).forEach(([nome, series]) => {
+      if (idx && nome !== idx) return;
+      byIndex[nome] = series
+        .filter(d => d.date >= cutoffISO)   /* garante mesma janela temporal para todos */
+        .map(d => ({ x: d.date, y: d.value }));
+    });
+
+    const datasets = [];
+    const indices = idx ? [idx] : Object.keys(COLORS);
+
+    /* Separa séries fora da escala percentual (>100) no eixo direito */
+    const scaleOf = nome => {
+      const vals = byIndex[nome];
+      if (!vals?.length) return 'y';
+      return Math.max(...vals.map(d => Math.abs(d.y))) > 100 ? 'y2' : 'y';
+    };
+
+    indices.forEach(nome => {
+      const cor = COLORS[nome] || '#888';
+      if (!byIndex[nome]?.length) return;
+      datasets.push({
+        label: nome,
+        data: byIndex[nome],
+        borderColor: cor,
+        backgroundColor: cor + '18',
+        borderWidth: 2,
+        tension: 0.3,
+        pointRadius: 2.5,
+        pointHoverRadius: 5,
+        fill: false,
+        yAxisID: scaleOf(nome),
+      });
+    });
+
+    const hasSecondary = datasets.some(d => d.yAxisID === 'y2');
+
+    if (chartIndices) chartIndices.destroy();
+    const ctx = document.getElementById('chartIndices').getContext('2d');
+    chartIndices = new Chart(ctx, {
+      type: 'line',
+      data: { datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0d1f38',
+            borderColor: '#1a3356',
+            borderWidth: 1,
+            titleColor: '#d4e4f7',
+            bodyColor: '#8aadcc',
+            titleFont: { family: 'IBM Plex Mono', size: 11 },
+            bodyFont: { family: 'IBM Plex Mono', size: 11 },
+            padding: 10,
+            callbacks: {
+              title: items => fmtMonth(items[0].parsed.x),
+              label: ctx => ` ${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}${ctx.dataset.yAxisID === 'y2' ? '' : '%'}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            type: 'time',
+            time: { unit: 'month', displayFormats: { month: 'MMM/yy' } },
+            ticks: { color: '#4a7a9b', font: { family: 'IBM Plex Mono', size: 10 } },
+            grid: { color: 'rgba(26, 51, 86, 0.5)' },
+            border: { color: 'rgba(26, 51, 86, 0.5)' },
+          },
+          y: {
+            position: 'left',
+            ticks: {
+              color: '#4a7a9b',
+              font: { family: 'IBM Plex Mono', size: 10 },
+              callback: v => v.toFixed(2).replace('.', ',') + '%',
+            },
+            grid: { color: 'rgba(26, 51, 86, 0.5)' },
+            border: { color: 'rgba(26, 51, 86, 0.5)' },
+          },
+          y2: {
+            display: hasSecondary,
+            position: 'right',
+            ticks: {
+              color: COLORS['PIB'] + 'cc',
+              font: { family: 'IBM Plex Mono', size: 10 },
+              callback: v => v.toLocaleString('pt-BR'),
+            },
+            grid: { drawOnChartArea: false },
+            border: { color: COLORS['PIB'] + '44' },
+          },
+        },
+      },
+    });
+
+    renderAISection(null);
+
+    const flat = [];
+    Object.entries(_cache).forEach(([nome, series]) => {
+      if (idx && nome !== idx) return;
+      series.forEach(d => flat.push({ date: d.date, index_name: nome, value: d.value }));
+    });
+    renderTable(flat);
+
+  } catch (e) {
+    showToast('Erro ao carregar dados: ' + e.message, 'error');
+  }
+}
+
+/* ── Seção IA ─────────────────────────────────────────────── */
+function renderAISection(proj) {
+  const dt    = document.getElementById('projectionDate');
+  const tbody = document.getElementById('projTableBody');
+  const panel = document.getElementById('aiAnalysisPanel');
+
+  if (!proj || !proj.projections?.length) {
+    dt.textContent = '—';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Nenhuma projeção disponível.<br>Clique em "Gerar Projeção IA" para iniciar.</td></tr>';
+    panel.innerHTML = '<div class="empty">Análise indisponível.</div>';
+    return;
+  }
+
+  dt.textContent = 'Gerado em ' + new Date(proj.generated_at).toLocaleString('pt-BR');
+
+  const byMonth = {};
+  proj.projections.forEach(p => {
+    const key = p.projection_month;
+    if (!byMonth[key]) byMonth[key] = { mes: key };
+    byMonth[key][p.index_name] = p.projected_value;
+  });
+
+  const colorMap = { 'IPCA':'#1e90ff','INPC':'#3fb950','IGP-M':'#f85149','PIB':'#bc8cff','INCC':'#d29922' };
+  tbody.innerHTML = Object.values(byMonth)
+    .sort((a, b) => a.mes.localeCompare(b.mes))
+    .map(row => {
+      const d = new Date(row.mes + 'T00:00:00');
+      const label = d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+      return `<tr><td>${label}</td>${['IPCA','INPC','IGP-M','PIB','INCC'].map(k =>
+        `<td style="color:${colorMap[k]}">${row[k] != null ? fmtNum(row[k]) : '—'}</td>`
+      ).join('')}</tr>`;
+    }).join('');
+
+  let html = '';
+  if (proj.analysis) {
+    html += `<div class="analysis-block">
+      <div class="analysis-block-title">Análise Macroeconômica</div>
+      <div class="analysis-text">${proj.analysis}</div>
+    </div>`;
+  }
+  if (proj.risks?.length) {
+    html += `<div class="risks-block">
+      <div class="risks-block-title">Principais Riscos Identificados</div>
+      ${proj.risks.map((r, i) => `
+        <div class="risk-item">
+          <span class="risk-num">${String(i + 1).padStart(2, '0')}</span>
+          <span>${r}</span>
+        </div>`).join('')}
+    </div>`;
+  }
+  panel.innerHTML = html || '<div class="empty">Análise indisponível.</div>';
+}
+
+/* ── Tabela ──────────────────────────────────────────────── */
+function renderTable(rows) {
+  const tbody = document.querySelector('#tableIndices tbody');
+  document.getElementById('dataCount').textContent = rows.length + ' registros';
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="3" class="empty">Sem dados</td></tr>';
+    return;
+  }
+  const sorted = [...rows].sort((a, b) => new Date(b.date) - new Date(a.date));
+  tbody.innerHTML = sorted.map(r => `
+    <tr>
+      <td style="color:var(--text-2)">${fmtDate(r.date)}</td>
+      <td><span style="color:${COLORS[r.index_name]||'#888'};font-weight:600">${r.index_name}</span></td>
+      <td class="td-right" style="color:var(--text)">${fmtNum(r.value)}</td>
+    </tr>`).join('');
+}
+
+/* ── Bolsa Família (dados hardcoded) ─────────────────────── */
+async function loadBolsaFamilia() {
+  try {
+    const data = {
+      kpis: { total_beneficiaries:57757, cadunico_families:137198, cadunico_people:316580,
+               renda_campinas_families:25000, poverty_reduction_pct:21, reference_month:"Janeiro/2025" },
+      regions: [
+        { region:"Sul",      beneficiaries:17670, avg_income:285, pct_of_total:31 },
+        { region:"Noroeste", beneficiaries:13716, avg_income:310, pct_of_total:24 },
+        { region:"Sudoeste", beneficiaries:13146, avg_income:295, pct_of_total:23 },
+        { region:"Norte",    beneficiaries:7993,  avg_income:340, pct_of_total:14 },
+        { region:"Leste",    beneficiaries:4560,  avg_income:390, pct_of_total:8  },
+      ],
+      history: [
+        { year:2020, families:48200 },
+        { year:2021, families:61400 },
+        { year:2022, families:74863 },
+        { year:2023, families:68200 },
+        { year:2024, families:57757 },
+        { year:2025, families:55100, is_projection:true },
+      ],
+      profile: [
+        { label:"Responsáveis femininos",   value:83 },
+        { label:"Ensino Médio completo",     value:54 },
+        { label:"Autônomos (mercado inf.)",  value:30 },
+        { label:"Empregados formais",        value:15 },
+        { label:"Jovens 'nem-nem'",          value:60 },
+      ],
+    };
+
+    document.getElementById('bfMonth').textContent = data.kpis.reference_month;
+
+    document.getElementById('bfKpis').innerHTML = `
+      <div class="bf-kpi">
+        <div class="bf-kpi-label">Beneficiários BF</div>
+        <div class="bf-kpi-value">${data.kpis.total_beneficiaries.toLocaleString('pt-BR')}</div>
+        <div class="bf-kpi-note">3º maior no estado SP</div>
+      </div>
+      <div class="bf-kpi">
+        <div class="bf-kpi-label">Famílias CadÚnico</div>
+        <div class="bf-kpi-value">${data.kpis.cadunico_families.toLocaleString('pt-BR')}</div>
+        <div class="bf-kpi-note">+8% vs 2022</div>
+      </div>
+      <div class="bf-kpi">
+        <div class="bf-kpi-label">Redução da Pobreza</div>
+        <div class="bf-kpi-value" style="color:var(--green)">-${data.kpis.poverty_reduction_pct}%</div>
+        <div class="bf-kpi-note">2022 → 2024</div>
+      </div>`;
+
+    document.getElementById('profileBars').innerHTML = data.profile.map(p => `
+      <div class="profile-row">
+        <div class="profile-label">${p.label}</div>
+        <div class="profile-bar-track"><div class="profile-bar-fill" style="width:${p.value}%"></div></div>
+        <div class="profile-pct">${p.value}%</div>
+      </div>`).join('');
+
+    if (chartRegions) chartRegions.destroy();
+    chartRegions = new Chart(document.getElementById('chartRegions'), {
+      type: 'bar',
+      data: {
+        labels: data.regions.map(r => r.region),
+        datasets: [{ label:'Beneficiários', data: data.regions.map(r => r.beneficiaries),
+          backgroundColor: ['#1e90ff','#3fb950','#bc8cff','#d29922','#f85149'], borderRadius: 2 }],
+      },
+      options: makeChartOpts(false),
+    });
+
+    if (chartHistory) chartHistory.destroy();
+    const isProj = data.history.map(h => h.is_projection || false);
+    chartHistory = new Chart(document.getElementById('chartHistory'), {
+      type: 'line',
+      data: {
+        labels: data.history.map(h => h.year.toString()),
+        datasets: [{
+          label: 'Famílias em pobreza extrema',
+          data: data.history.map(h => h.families),
+          borderColor: '#1e90ff',
+          backgroundColor: 'rgba(30,144,255,0.08)',
+          fill: true, tension: 0.35,
+          pointRadius: data.history.map((_, i) => i === data.history.length - 1 ? 5 : 3),
+          pointBackgroundColor: data.history.map(h => h.is_projection ? '#d29922' : '#1e90ff'),
+          segment: {
+            borderDash: ctx => isProj[ctx.p1DataIndex] ? [5, 4] : [],
+            borderColor: ctx => isProj[ctx.p1DataIndex] ? '#d29922' : '#1e90ff',
+          },
+        }],
+      },
+      options: makeChartOpts(true),
+    });
+
+  } catch (e) {
+    showToast('Erro Bolsa Família: ' + e.message, 'error');
+  }
+}
+
+function makeChartOpts(fillY) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#8aadcc', font: { family: 'IBM Plex Mono', size: 11 } } },
+      tooltip: {
+        backgroundColor: '#0d1f38', borderColor: '#1a3356', borderWidth: 1,
+        titleColor: '#d4e4f7', bodyColor: '#8aadcc',
+        titleFont: { family: 'IBM Plex Mono', size: 11 },
+        bodyFont: { family: 'IBM Plex Mono', size: 11 }, padding: 10,
+      },
+    },
+    scales: {
+      x: { ticks: { color:'#4a7a9b', font:{ family:'IBM Plex Mono', size:10 } }, grid:{ color:'rgba(26,51,86,0.5)' }, border:{ color:'rgba(26,51,86,0.5)' } },
+      y: { ticks: { color:'#4a7a9b', font:{ family:'IBM Plex Mono', size:10 }, callback: v => v.toLocaleString('pt-BR') }, grid:{ color:'rgba(26,51,86,0.5)' }, border:{ color:'rgba(26,51,86,0.5)' } },
+    },
+  };
+}
+
+/* ── Botões ──────────────────────────────────────────────── */
+document.getElementById('btnSync').addEventListener('click', async e => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span> Sincronizando…';
+  try {
+    _cache = {};
+    await loadKPIs();
+    await loadChart();
+    showToast('Dados sincronizados com o BCB!', 'success');
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Sincronizar BCB';
+  }
+});
+
+/* ── Projeção Estatística (Holt amortecido — sem API) ────────
+   Método: Holt's damped exponential smoothing
+   - alpha: fator de suavização do nível
+   - beta:  fator de suavização da tendência
+   - phi:   fator de amortecimento (evita extrapolação explosiva)
+   ─────────────────────────────────────────────────────────── */
+function holtDamped(values, steps = 6, alpha = 0.35, beta = 0.15, phi = 0.88) {
+  const v = values.filter(x => x != null && !isNaN(x));
+  if (v.length < 2) {
+    const last = v[v.length - 1] ?? 0;
+    return Array(steps).fill(parseFloat(last.toFixed(2)));
+  }
+  let l = v[0];
+  let b = v[1] - v[0];
+  for (let i = 1; i < v.length; i++) {
+    const prevL = l;
+    l = alpha * v[i] + (1 - alpha) * (l + phi * b);
+    b = beta * (l - prevL) + (1 - beta) * phi * b;
+  }
+  let phiH = phi;
+  return Array.from({ length: steps }, (_, h) => {
+    const f = l + phiH * b;
+    phiH += Math.pow(phi, h + 2);
+    return parseFloat(f.toFixed(2));
+  });
+}
+
+function gerarAnalise(cache, projecoes) {
+  const indices = ['IPCA', 'INPC', 'IGP-M', 'INCC'];
+  const resumos = indices.map(nm => {
+    const s = cache[nm] || [];
+    if (!s.length) return null;
+    const ultimo = s[s.length - 1].value;
+    const proj   = projecoes[nm] || [];
+    const media  = proj.length ? proj.reduce((a, b) => a + b, 0) / proj.length : ultimo;
+    const tend   = media > ultimo ? 'alta' : media < ultimo ? 'queda' : 'estabilidade';
+    return `${nm} (atual ${fmtNum(ultimo)}% → média projetada ${fmtNum(media)}%: tendência de ${tend})`;
+  }).filter(Boolean);
+
+  const ipcaAtual  = (cache['IPCA']  || []).slice(-1)[0]?.value ?? 0;
+  const inccAtual  = (cache['INCC']  || []).slice(-1)[0]?.value ?? 0;
+  const igpmAtual  = (cache['IGP-M'] || []).slice(-1)[0]?.value ?? 0;
+
+  let texto = `Projeção estatística baseada em Holt amortecido para os próximos 6 meses. `;
+  texto += resumos.join('. ') + '. ';
+  if (ipcaAtual > 0.8) texto += `O IPCA permanece acima da meta do Banco Central, sugerindo pressão inflacionária persistente. `;
+  if (inccAtual > 1.0) texto += `O INCC acelerado reflete custos crescentes na construção civil. `;
+  if (igpmAtual > 1.5) texto += `O IGP-M elevado sinaliza repasse de custos ao produtor. `;
+  texto += `Projeções calculadas com suavização exponencial amortecida (α=${0.35}, β=${0.15}, φ=${0.88}).`;
+  return texto;
+}
+
+function gerarRiscos(cache) {
+  const riscos = [];
+  const ipca  = (cache['IPCA']  || []).slice(-3).map(d => d.value);
+  const igpm  = (cache['IGP-M'] || []).slice(-3).map(d => d.value);
+  const incc  = (cache['INCC']  || []).slice(-3).map(d => d.value);
+
+  const media = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+  if (media(ipca) > 0.7)  riscos.push('Inflação ao consumidor (IPCA) acima de 0,7% ao mês sustentada pode pressionar juros.');
+  if (media(igpm) > 1.2)  riscos.push('IGP-M elevado pode se transformar em repasse aos preços ao consumidor nos próximos meses.');
+  if (media(incc) > 0.9)  riscos.push('Custos da construção civil (INCC) acelerados impactam setor imobiliário e obras públicas.');
+  if (riscos.length < 2)  riscos.push('Volatilidade cambial pode pressionar custos de importados e energia.');
+  riscos.push('Incertezas fiscais e ambiente externo desfavorável representam riscos adicionais ao cenário base.');
+  return riscos.slice(0, 3);
+}
+
+document.getElementById('btnGenerate').addEventListener('click', e => {
+  if (!Object.keys(_cache).length) {
+    showToast('Carregue os dados do BCB primeiro.', 'error');
+    return;
+  }
+
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span> Calculando projeção…';
+
+  try {
+    /* Descobre o próximo mês após o último dado */
+    const todasDatas = Object.values(_cache).flatMap(s => s.map(d => d.date)).sort();
+    const ultimaData = new Date(todasDatas[todasDatas.length - 1] + 'T00:00:00');
+    ultimaData.setMonth(ultimaData.getMonth() + 1);
+
+    const MES_MAP = {Jan:1,Fev:2,Mar:3,Abr:4,Mai:5,Jun:6,Jul:7,Ago:8,Set:9,Out:10,Nov:11,Dez:12};
+    const IDX_MAP = { IPCA:'IPCA', INPC:'INPC', 'IGP-M':'IGP-M', PIB:'PIB', INCC:'INCC' };
+
+    const projecoesPorIndice = {};
+    const projections = [];
+
+    /* Aplica Holt amortecido em cada série */
+    Object.entries(IDX_MAP).forEach(([, nome]) => {
+      const serie = (_cache[nome] || []).map(d => d.value);
+      projecoesPorIndice[nome] = holtDamped(serie, 6);
+    });
+
+    /* Monta objetos de projeção por mês */
+    for (let h = 0; h < 6; h++) {
+      const d = new Date(ultimaData);
+      d.setMonth(d.getMonth() + h);
+      const iso = d.toISOString().split('T')[0];
+      Object.entries(IDX_MAP).forEach(([, nome]) => {
+        const val = projecoesPorIndice[nome][h];
+        if (val != null) projections.push({ projection_month: iso, index_name: nome, projected_value: val });
+      });
+    }
+
+    renderAISection({
+      projections,
+      analysis: gerarAnalise(_cache, projecoesPorIndice),
+      risks:    gerarRiscos(_cache),
+      generated_at: new Date().toISOString(),
+    });
+
+    showToast('Projeção estatística calculada!', 'success');
+
+  } catch (err) {
+    showToast('Erro: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Gerar Projeção IA';
+  }
+});
+
+document.getElementById('btnReload').addEventListener('click', () => {
+  _cache = {};
+  loadKPIs(); loadChart(); loadBolsaFamilia(); checkHealth();
+  showToast('Painel atualizado.', 'success');
+});
+
+document.getElementById('selMonths').addEventListener('change', async () => {
+  _cache = {};
+  await loadKPIs();
+  loadChart();
+});
+document.getElementById('selIndex').addEventListener('change', loadChart);
+
+/* ── Init ────────────────────────────────────────────────── */
+(async () => {
+  await checkHealth();
+  await loadKPIs();
+  await Promise.all([loadChart(), loadBolsaFamilia()]);
+})();
+
+setInterval(checkHealth, 30000);
+</script>
+</body>
+</html>

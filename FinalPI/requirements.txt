@@ -1,0 +1,24 @@
+# ── Core API ──────────────────────────────────────────────────────────────────
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+
+# ── Database ──────────────────────────────────────────────────────────────────
+sqlalchemy==2.0.36
+# SQLite is built into Python — no extra install needed (default)
+# Uncomment below ONLY if you want PostgreSQL:
+# psycopg2-binary==2.9.10
+
+# ── Forecasting (local AI engine) ────────────────────────────────────────────
+numpy>=1.24.0          # improves projection accuracy; falls back to pure Python if missing
+
+# ── HTTP ─────────────────────────────────────────────────────────────────────
+requests==2.32.3
+
+# ── Scheduler ────────────────────────────────────────────────────────────────
+apscheduler==3.10.4
+
+# ── Utilities ────────────────────────────────────────────────────────────────
+python-dotenv==1.0.1
+
+# ── Optional: uncomment to enable Claude AI for richer analysis ──────────────
+# anthropic==0.40.0
