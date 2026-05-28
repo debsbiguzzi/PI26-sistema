@@ -1,2 +1,1 @@
-Projeto Integrador - 2026
-Puc Campinas
+Projeto Integrador - 2026 - PUC CAMPINAS
